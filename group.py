@@ -38,7 +38,7 @@ class GroupServer:
                 self.socket.send_json(messages_to_send)
             elif message['request'] == 'SEND_MESSAGE':
                 if message['uuid'] in self.users:
-                    self.messages.append({'uuid': message['uuid'], 'message': message['message'], 'timestamp': time.time()})
+                    self.messages.append({'uuid': message['uuid'], 'message': message['message'], 'timestamp': time.strftime('%H:%M:%S')})
                     self.socket.send_string("SUCCESS")
                 else:
                     self.socket.send_string("FAILURE: User not in group")
