@@ -46,7 +46,9 @@ class GroupServer:
         threading.Thread(target=self.handle_user_request).start()
 
 if __name__ == "__main__":
-    group_server = GroupServer("LOCALHOST", 3000, 2000)
+    port_num = int(input("Enter port number for group server: "))
+    server_name = input("Enter group server name: ")
+    group_server = GroupServer(server_name, port_num, 2000)
     print("Group Server "+group_server.name+" "+str(group_server.port)+" started...")
     response = group_server.join_message_server()
     print("join request response from message server : ",response)

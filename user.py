@@ -1,6 +1,5 @@
 import zmq
 import uuid
-import datetime
 
 class User:
     def __init__(self, name,message_server_ip,uuid):
@@ -44,7 +43,8 @@ class User:
         return response
 
 if __name__ == "__main__":
-    user = User("User1","localhost:2000",str(uuid.uuid1()))
+    user_name = input("Enter user name: ")
+    user = User(user_name,"localhost:2000",str(uuid.uuid1()))
 
     while True:
         print("\nMenu:")
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             grp_port = input("Enter group port to send messages to: ")
             message = input("Enter your message: ")
             response = user.send_message(grp_port,message)
-            print("Message sent:", response)
+            print("Message sent status:", response)
         elif choice == '6':
             break
         else:
