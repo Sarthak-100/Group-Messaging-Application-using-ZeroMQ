@@ -15,15 +15,17 @@ class User:
         print("\n".join([f"{name} - {ip_address}" for name, ip_address in response.items()]))
 
     def join_group(self,grp_port):
-        grp_socket = self.context.socket(zmq.REQ)
+        grp_socket = zmq.Context().socket(zmq.REQ)
         grp_socket.connect(f"tcp://localhost:{grp_port}")
         grp_socket.send_json({'request': 'JOIN', 'uuid': self.uuid, 'name': self.name})
         response = grp_socket.recv_string()
         return response
 
-    def leave_group(self):
-        self.socket.send_json({'request': 'LEAVE', 'uuid': self.uuid})
-        response = self.socket.recv_string()
+    def leave_group(self,grp_port):
+        grp_socket = zmq.Context().socket(zmq.REQ)
+        grp_socket.connect(f"tcp://localhost:{grp_port}")
+        grp_socket.send_json({'request': 'LEAVE', 'uuid': self.uuid})
+        response = grp_socket.recv_string()
         return response
 
     def get_messages(self, timestamp=None):
@@ -52,12 +54,15 @@ if __name__ == "__main__":
         if choice == '1':
             user.get_group_list()
         elif choice == '2':
-            grp_port = input("Enter group port: ")
+            grp_port = input("Enter group port to join: ")
             response = user.join_group(grp_port=int(grp_port))
             if response == "SUCCESS":
                 print("Successfully joined group with port", grp_port)
         elif choice == '3':
-            user.leave_group()
+            grp_port = input("Enter group port to leave: ")
+            response = user.leave_group(grp_port=int(grp_port))
+            if response == "SUCCESS":
+                print("Successfully left group with port", grp_port)
         elif choice == '4':
             timestamp = input("Enter timestamp (leave blank for all messages): ")
             user.get_messages(timestamp)

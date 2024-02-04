@@ -29,6 +29,8 @@ class GroupServer:
                 self.socket.send_string("SUCCESS")
             elif message['request'] == 'LEAVE':
                 del self.users[message['uuid']]
+                print(f"Leave request from User {message['uuid']}")
+                print("User has successfully left the group")
                 self.socket.send_string("SUCCESS")
             elif message['request'] == 'GET_MESSAGES':
                 timestamp = message.get('timestamp')
