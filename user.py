@@ -1,5 +1,7 @@
 import zmq
 import uuid
+import time
+import datetime
 
 class User:
     def __init__(self, name,message_server_ip,uuid):
@@ -28,9 +30,11 @@ class User:
         response = grp_socket.recv_string()
         return response
 
-    def get_messages(self, timestamp=None):
+    def get_messages(self, grp_port, timestamp=None):
         grp_socket = zmq.Context().socket(zmq.REQ)
         grp_socket.connect(f"tcp://localhost:{grp_port}")
+        if timestamp:
+            timestamp = time.mktime(datetime.datetime.strptime(timestamp, "%H:%M:%S").timetuple())
         grp_socket.send_json({'request': 'GET_MESSAGES', 'uuid': self.uuid, 'timestamp': timestamp})
         response = grp_socket.recv_json()
         return response
@@ -70,7 +74,9 @@ if __name__ == "__main__":
         elif choice == '4':
             grp_port = input("Enter group port to request messages from: ")
             timestamp = input("Enter timestamp (leave blank for all messages): ")
-            user.get_messages(grp_port,timestamp)
+            messages = user.get_messages(grp_port,timestamp)
+            for message in messages:
+                print(f"{message['uuid']}: {message['message']} : {datetime.datetime.fromtimestamp(message['timestamp']).strftime('%H:%M:%S')}")
         elif choice == '5':
             grp_port = input("Enter group port to send messages to: ")
             message = input("Enter your message: ")
