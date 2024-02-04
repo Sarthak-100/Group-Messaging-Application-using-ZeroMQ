@@ -29,13 +29,17 @@ class User:
         return response
 
     def get_messages(self, timestamp=None):
-        self.socket.send_json({'request': 'GET_MESSAGES', 'uuid': self.uuid, 'timestamp': timestamp})
-        response = self.socket.recv_json()
+        grp_socket = zmq.Context().socket(zmq.REQ)
+        grp_socket.connect(f"tcp://localhost:{grp_port}")
+        grp_socket.send_json({'request': 'GET_MESSAGES', 'uuid': self.uuid, 'timestamp': timestamp})
+        response = grp_socket.recv_json()
         return response
 
-    def send_message(self, message):
-        self.socket.send_json({'request': 'SEND_MESSAGE', 'uuid': self.uuid, 'message': message})
-        response = self.socket.recv_string()
+    def send_message(self,grp_port,message):
+        grp_socket = zmq.Context().socket(zmq.REQ)
+        grp_socket.connect(f"tcp://localhost:{grp_port}")
+        grp_socket.send_json({'request': 'SEND_MESSAGE', 'uuid': self.uuid, 'message': message})
+        response = grp_socket.recv_string()
         return response
 
 if __name__ == "__main__":
@@ -64,11 +68,14 @@ if __name__ == "__main__":
             if response == "SUCCESS":
                 print("Successfully left group with port", grp_port)
         elif choice == '4':
+            grp_port = input("Enter group port to request messages from: ")
             timestamp = input("Enter timestamp (leave blank for all messages): ")
-            user.get_messages(timestamp)
+            user.get_messages(grp_port,timestamp)
         elif choice == '5':
+            grp_port = input("Enter group port to send messages to: ")
             message = input("Enter your message: ")
-            user.send_message(message)
+            response = user.send_message(grp_port,message)
+            print("Message sent:", response)
         elif choice == '6':
             break
         else:
