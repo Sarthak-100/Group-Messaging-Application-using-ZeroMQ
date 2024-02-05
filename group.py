@@ -15,7 +15,7 @@ class GroupServer:
         self.messages = []
 
     def join_message_server(self):
-        self.message_server_socket.send_json({'request': 'JOIN', 'name': self.name, 'port': self.port})
+        self.message_server_socket.send_json({'request': 'REGISTER', 'name': self.name, 'port': self.port})
         response = self.message_server_socket.recv_string()
         return response
     
@@ -23,20 +23,34 @@ class GroupServer:
         while True:
             message = self.socket.recv_json()
             if message['request'] == 'JOIN':
-                self.users[message['uuid']] = message['name']
-                print(f"Join request from User {message['uuid']}")
-                print("User has successfully joined the group")
-                self.socket.send_string("SUCCESS")
+                print(f"JOIN REQUEST FROM User {message['uuid']}")
+                
+                if message['uuid'] in self.users:
+                    self.socket.send_string("FAILURE: User already in group")
+                    print("User already in the group")
+                else:
+                    self.users[message['uuid']] = message['name']
+                    self.socket.send_string("SUCCESS")
+                    print("User has successfully joined the group")
             elif message['request'] == 'LEAVE':
-                del self.users[message['uuid']]
-                print(f"Leave request from User {message['uuid']}")
-                print("User has successfully left the group")
-                self.socket.send_string("SUCCESS")
+                print(f"LEAVE REQUEST FROM User {message['uuid']}")
+                if message['uuid'] in self.users:
+                    del self.users[message['uuid']]
+                    print("User has successfully left the group")
+                    self.socket.send_string("SUCCESS")
+                else:
+                    self.socket.send_string("FAILURE: User not in group")
+                    print("User not in the group")
             elif message['request'] == 'GET_MESSAGES':
-                timestamp = message.get('timestamp')
-                messages_to_send = [msg for msg in self.messages if msg['timestamp'] >= timestamp] if timestamp else self.messages
-                self.socket.send_json(messages_to_send)
+                print(f"MESSAGE REQUEST FROM User {message['uuid']}")
+                if message['uuid'] in self.users:
+                    timestamp = message.get('timestamp')
+                    messages_to_send = [msg for msg in self.messages if msg['timestamp'] >= timestamp] if timestamp else self.messages
+                    self.socket.send_json(messages_to_send)
+                else:
+                    self.socket.send_json({"status": "FAILURE", "message": "User not in group"})
             elif message['request'] == 'SEND_MESSAGE':
+                print(f"MESSAGE SEND FROM User {message['uuid']}")
                 if message['uuid'] in self.users:
                     self.messages.append({'uuid': message['uuid'], 'message': message['message'], 'timestamp': time.strftime('%H:%M:%S')})
                     self.socket.send_string("SUCCESS")
@@ -52,4 +66,8 @@ if __name__ == "__main__":
     print("Group Server "+group_server.name+" "+str(group_server.port)+" started...")
     response = group_server.join_message_server()
     print("join request response from message server : ",response)
-    group_server.start()
+    if response == "SUCCESS":
+        print("Successfully registered with the message server. Starting the group server...")
+        group_server.start()
+    else:
+        print("Failed to register with the message server. Group server will not start.")

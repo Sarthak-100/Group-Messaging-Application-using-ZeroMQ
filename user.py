@@ -33,6 +33,7 @@ class User:
         grp_socket.connect(f"tcp://localhost:{grp_port}")
         grp_socket.send_json({'request': 'GET_MESSAGES', 'uuid': self.uuid, 'timestamp': timestamp})
         response = grp_socket.recv_json()
+        
         return response
 
     def send_message(self,grp_port,message):
@@ -61,19 +62,26 @@ if __name__ == "__main__":
         elif choice == '2':
             grp_port = input("Enter group port to join: ")
             response = user.join_group(grp_port=int(grp_port))
+            print("Join status:", response)
             if response == "SUCCESS":
                 print("Successfully joined group with port", grp_port)
         elif choice == '3':
             grp_port = input("Enter group port to leave: ")
             response = user.leave_group(grp_port=int(grp_port))
+            print("Leave status:", response)
             if response == "SUCCESS":
                 print("Successfully left group with port", grp_port)
         elif choice == '4':
             grp_port = input("Enter group port to request messages from: ")
             timestamp = input("Enter timestamp (leave blank for all messages): ")
-            messages = user.get_messages(grp_port,timestamp)
-            for message in messages:
-                print(f"{message['uuid']}: {message['message']} at {message['timestamp']}")
+            response = user.get_messages(grp_port, timestamp)
+            
+            if "status" in response and response["status"] == "FAILURE":
+                print(f"Failed to get messages: {response.get('message', 'Unknown error')}")
+            else:
+                messages = response
+                for message in messages:
+                    print(f"{message['uuid']}: {message['message']} at {message['timestamp']}")
         elif choice == '5':
             grp_port = input("Enter group port to send messages to: ")
             message = input("Enter your message: ")
