@@ -68,6 +68,10 @@ The architecture includes:
 2. Run multiple instances of `group.py` for different groups.
 3. Run `user.py` for each user, interacting with the message server and groups.
 
+## Assumptions
+1. Since the assignment does not explicitly state to include the date along with time, thereby I have just used time for filtering conversations.
+2. Since the assignment does not explicitly state which timezone's time to include when filtering messages, thereby I am using UTC time.
+
 ## Dependencies
 
 - ZeroMQ: Ensure you have ZeroMQ installed on your system.
