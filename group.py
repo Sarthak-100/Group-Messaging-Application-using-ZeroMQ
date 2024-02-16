@@ -10,7 +10,7 @@ class GroupServer:
         self.socket = self.context.socket(zmq.REP)
         self.socket.bind(f"tcp://*:{self.port}")
         self.message_server_socket = self.context.socket(zmq.REQ)
-        self.message_server_socket.connect(f"tcp://localhost:{message_server_port}")
+        self.message_server_socket.connect(f"tcp://34.131.224.250:{message_server_port}")
         self.users = {}
         self.messages = []
 
